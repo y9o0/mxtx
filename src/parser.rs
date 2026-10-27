@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use crate::{
     ast::Expr,
     definitions::Function,
@@ -10,13 +12,14 @@ use crate::{
 
 use anyhow::{Context, Result as Ares, anyhow};
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct MoveToken<'t> {
     pub pool: Vec<Token<'t>>,
     pub current: Token<'t>,
     pub previous: Token<'t>,
 }
 
+#[derive(Debug)]
 pub struct Parser<'t> {
     pub tokens: MoveToken<'t>,
     pub line: u8,
@@ -205,26 +208,9 @@ impl Parser<'_> {
     }
 
     pub fn group(&mut self) -> Ares<Expr> {
-        let mut tokens = Vec::new();
-        while self.tokens.current != Token::RightParen {
-            self.advance()?;
-            let token = self.tokens.previous;
-            tokens.push(token);
-        }
-
+        let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
         self.advance()?;
-        self.match_or_err(Token::RightParen, false, None)?;
-
-        let text = tokens
-            .iter()
-            .map(|t| t.to_owned().to_string())
-            .collect::<Vec<_>>()
-            .join(" ");
-
-        let mut parser = Parser::new(&text)?;
-        parser.advance()?;
-        let expr = parser.parse_precedence(crate::pratt::Precedence::None)?;
-
+        self.match_or_err(Token::RightParen, false, Some("closing ')' of group"))?;
         Ok(Expr::Group(Box::new(expr)))
     }
 
@@ -236,6 +222,12 @@ impl Parser<'_> {
         Ok(Expr::Radical {
             operator: op,
             right: Box::new(right),
+        })
+    }
+
+    pub fn pi(&mut self) -> Ares<Expr> {
+        Ok(Expr::Number {
+            value: Value::Number(PI),
         })
     }
 }
@@ -250,8 +242,13 @@ pub fn function(equation: &str) -> Ares<Function<'_>> {
 pub fn equation(equation: &str) -> Ares<f64> {
     let mut parser = Parser::new(equation)?;
     parser.advance()?;
+
     let expr = parser.parse_precedence(crate::pratt::Precedence::None)?;
-    let Value::Number(x) = Expr::codegen(expr)?;
+
+    let Value::Number(x) = Expr::codegen(expr.clone())? else {
+        return Err(anyhow!("Expected a number found '{:?}'", expr));
+    };
+
     Ok(x)
 }
 
@@ -295,7 +292,10 @@ impl Function<'_> {
         expr.advance()?;
 
         let expr = expr.parse_precedence(crate::pratt::Precedence::None)?;
-        let Value::Number(x) = Expr::codegen(expr)?;
+
+        let Value::Number(x) = Expr::codegen(expr.clone())? else {
+            return Err(anyhow!("Expected a number found '{:?}'", expr));
+        };
 
         Ok(x)
     }

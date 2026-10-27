@@ -38,6 +38,10 @@ pub enum Token<'t> {
     #[token("√")]
     Sqrt,
 
+    #[token("pi")]
+    #[token("π")]
+    Pi,
+
     Eof,
 
     #[default]
@@ -59,6 +63,7 @@ impl Token<'_> {
             Token::Div => 9,
             Token::Pow => 10,
             Token::Sqrt => 11,
+            Token::Pi => 12,
             Token::Eof => 0x0,
             Token::Nai => 0x1,
         }
@@ -82,6 +87,7 @@ impl Token<'_> {
             Token::Div => "/".to_string(),
             Token::Pow => "^".to_string(),
             Token::Sqrt => "sqrt".to_string(),
+            Token::Pi => "pi".to_string(),
         }
     }
     pub fn to_binop(self) -> BinOp {

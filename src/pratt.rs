@@ -5,9 +5,10 @@ use anyhow::{Result as Ares, anyhow};
 pub enum Precedence {
     None,
     Term,    // + -
-    Factor,  // * / ^
-    Radical, // (sqrt | √)
+    Factor,  // * /
+    Radical, // (sqrt | √) ^
     Unary,   // -
+    Group,   // ()
     Primary,
 }
 
@@ -18,13 +19,15 @@ pub struct ParseRule<'s> {
     pub precedence: Precedence,
 }
 
+// it start from the lowst to the highst!
 impl Precedence {
     pub fn next(self) -> Precedence {
         match self {
             Precedence::None => Precedence::Term,
             Precedence::Term => Precedence::Factor,
-            Precedence::Factor => Precedence::Radical,
-            Precedence::Radical => Precedence::Unary,
+            Precedence::Factor => Precedence::Unary,
+            Precedence::Unary => Precedence::Radical,
+            Precedence::Radical => Precedence::Group,
             _ => Precedence::Primary,
         }
     }
@@ -61,17 +64,22 @@ impl Parser<'_> {
             Token::Pow => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Factor,
+                precedence: Precedence::Radical,
             },
             Token::LeftParen => ParseRule {
                 prefix: Some(Parser::group),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Group,
             },
             Token::Sqrt => ParseRule {
                 prefix: Some(Parser::radical),
                 infix: None,
                 precedence: Precedence::Radical,
+            },
+            Token::Pi => ParseRule {
+                prefix: Some(Parser::pi),
+                infix: None,
+                precedence: Precedence::None,
             },
             _ => ParseRule {
                 prefix: None,
