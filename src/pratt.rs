@@ -1,4 +1,8 @@
-use crate::{ast::Expr, lexer::Token, parser::Parser};
+use crate::{
+    ast::Expr,
+    lexer::Token,
+    parser::{OutCome, Parser},
+};
 use anyhow::{Result as Ares, anyhow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
@@ -13,9 +17,9 @@ pub enum Precedence {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct ParseRule<'s> {
-    pub prefix: Option<fn(&mut Parser<'s>) -> Ares<Expr>>,
-    pub infix: Option<fn(&mut Parser<'s>, &Expr) -> Ares<Expr>>,
+pub struct ParseRule<'s, R> {
+    pub prefix: Option<fn(&mut Parser<'s>) -> R>,
+    pub infix: Option<fn(&mut Parser<'s>, &Expr) -> R>,
     pub precedence: Precedence,
 }
 
@@ -34,7 +38,7 @@ impl Precedence {
 }
 
 impl Parser<'_> {
-    pub fn get_rule(token: Token) -> ParseRule {
+    pub fn get_rule<R: OutCome<R> + Into<Ares<Expr>>>(token: Token) -> ParseRule<R> {
         match token {
             Token::Num(_) => ParseRule {
                 prefix: Some(Parser::number),
@@ -76,8 +80,8 @@ impl Parser<'_> {
                 infix: None,
                 precedence: Precedence::Radical,
             },
-            Token::Pi => ParseRule {
-                prefix: Some(Parser::pi),
+            Token::Ident(_) => ParseRule {
+                prefix: Some(Parser::symbols),
                 infix: None,
                 precedence: Precedence::None,
             },
@@ -89,27 +93,31 @@ impl Parser<'_> {
         }
     }
 
-    pub fn parse_precedence(&mut self, min: Precedence) -> Ares<Expr> {
-        let mut expr: Expr;
+    pub fn parse_precedence<R: OutCome<R> + Into<Ares<Expr>>>(&mut self, min: Precedence) -> R {
+        let mut result = || -> Ares<Expr> {
+            let mut expr: Expr;
 
-        self.advance()?;
+            self.advance()?;
 
-        let rule = Self::get_rule(self.tokens.previous);
+            let rule = Self::get_rule::<R>(self.tokens.previous);
 
-        if let Some(prefix) = rule.prefix {
-            expr = prefix(self)?;
-        } else {
-            return Err(anyhow!("Expected an expr found None!"));
-        };
-
-        while min <= Self::get_rule(self.tokens.current).precedence {
-            let Some(infix) = Self::get_rule(self.tokens.current).infix else {
-                break;
+            if let Some(prefix) = rule.prefix {
+                expr = prefix(self).into()?;
+            } else {
+                return Err(anyhow!("Expected an expr found None!"));
             };
 
-            expr = infix(self, &expr)?;
-        }
+            while min <= Self::get_rule::<R>(self.tokens.current).precedence {
+                let Some(infix) = Self::get_rule::<R>(self.tokens.current).infix else {
+                    break;
+                };
 
-        Ok(expr)
+                expr = infix(self, &expr).into()?;
+            }
+
+            Ok(expr)
+        };
+
+        R::result(result())
     }
 }

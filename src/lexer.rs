@@ -6,7 +6,7 @@ use crate::ast::BinOp::{self};
 #[derive(Debug, PartialEq, Logos, Default, Clone, Copy)]
 #[logos(skip r"[\t \n \f]+")]
 pub enum Token<'t> {
-    #[regex("[a-zA-Z]+", |ident| ident.slice())]
+    #[regex("[a-df-zA-DF-Z]+", |ident| ident.slice())]
     Ident(&'t str),
     #[regex(
         r"[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?",
@@ -38,10 +38,6 @@ pub enum Token<'t> {
     #[token("√")]
     Sqrt,
 
-    #[token("pi")]
-    #[token("π")]
-    Pi,
-
     Eof,
 
     #[default]
@@ -63,7 +59,6 @@ impl Token<'_> {
             Token::Div => 9,
             Token::Pow => 10,
             Token::Sqrt => 11,
-            Token::Pi => 12,
             Token::Eof => 0x0,
             Token::Nai => 0x1,
         }
@@ -87,7 +82,6 @@ impl Token<'_> {
             Token::Div => "/".to_string(),
             Token::Pow => "^".to_string(),
             Token::Sqrt => "sqrt".to_string(),
-            Token::Pi => "pi".to_string(),
         }
     }
     pub fn to_binop(self) -> BinOp {
