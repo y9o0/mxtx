@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.104"
 logos = "0.16.1"
+thiserror = "2.0.21"
