@@ -1,4 +1,4 @@
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum TokenType {
     LeftParen,  // (
     RightParen, // )
@@ -21,19 +21,28 @@ pub enum TokenType {
     Nai, // default token
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Token {
-    token_type: TokenType,
-    lexeme: String,
-    literal: Option<Literal>,
-    line: u32,
+    pub token_type: TokenType,
+    pub lexeme: String,
+    pub literal: Option<Literal>,
+    pub line: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Literal {
     Number(f64),
     Ident(String),
     None,
+}
+
+impl Literal {
+    pub fn is_num(&self) -> bool {
+        match self {
+            Self::Number(_) => true,
+            _ => false,
+        }
+    }
 }
 
 pub type TokenContent = (TokenType, String, u32, Option<Literal>);

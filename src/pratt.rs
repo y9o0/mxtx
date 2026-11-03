@@ -1,9 +1,11 @@
 use crate::{
-    ast::Expr,
-    lexer::Token,
-    parser::{OutCome, Parser},
+    ast::exprs::Expr,
+    scanner::tokens::TokenType,
+    sema::{
+        core::Parser,
+        error::{self, SemaResult},
+    },
 };
-use anyhow::{Result as Ares, anyhow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum Precedence {
@@ -17,9 +19,9 @@ pub enum Precedence {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct ParseRule<'s, R> {
-    pub prefix: Option<fn(&mut Parser<'s>) -> R>,
-    pub infix: Option<fn(&mut Parser<'s>, &Expr) -> R>,
+pub struct ParseRule {
+    pub prefix: Option<fn(&mut Parser) -> SemaResult<Expr>>,
+    pub infix: Option<fn(&mut Parser, &Expr) -> SemaResult<Expr>>,
     pub precedence: Precedence,
 }
 
@@ -37,53 +39,48 @@ impl Precedence {
     }
 }
 
-impl Parser<'_> {
-    pub fn get_rule<R: OutCome<R> + Into<Ares<Expr>>>(token: Token) -> ParseRule<R> {
+impl Parser {
+    pub fn get_rule(token: TokenType) -> ParseRule {
         match token {
-            Token::Num(_) => ParseRule {
-                prefix: Some(Parser::number),
+            TokenType::Num => ParseRule {
+                prefix: Some(Parser::numbers),
                 infix: None,
                 precedence: Precedence::None,
             },
-            Token::Plus => ParseRule {
+            TokenType::Plus => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Term,
             },
-            Token::Sub => ParseRule {
+            TokenType::Minus => ParseRule {
                 prefix: Some(Parser::unary),
                 infix: Some(Parser::binary),
                 precedence: Precedence::Term,
             },
-            Token::Mul => ParseRule {
+            TokenType::Mul => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Factor,
             },
-            Token::Div => ParseRule {
+            TokenType::Div => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Factor,
             },
-            Token::Pow => ParseRule {
+            TokenType::Pow => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Radical,
             },
-            Token::LeftParen => ParseRule {
+            TokenType::LeftParen => ParseRule {
                 prefix: Some(Parser::group),
                 infix: None,
                 precedence: Precedence::Group,
             },
-            Token::Sqrt => ParseRule {
-                prefix: Some(Parser::radical),
+            TokenType::Sqrt => ParseRule {
+                prefix: Some(Parser::unary),
                 infix: None,
                 precedence: Precedence::Radical,
-            },
-            Token::Ident(_) => ParseRule {
-                prefix: Some(Parser::symbols),
-                infix: None,
-                precedence: Precedence::None,
             },
             _ => ParseRule {
                 prefix: None,
@@ -93,31 +90,30 @@ impl Parser<'_> {
         }
     }
 
-    pub fn parse_precedence<R: OutCome<R> + Into<Ares<Expr>>>(&mut self, min: Precedence) -> R {
-        let mut result = || -> Ares<Expr> {
-            let mut expr: Expr;
+    pub fn parse_precedence(&mut self, min: Precedence) -> SemaResult<Expr> {
+        let mut expr: Expr;
 
-            self.advance()?;
+        self.advance();
 
-            let rule = Self::get_rule::<R>(self.tokens.previous);
+        let rule = Self::get_rule(self.previous.token_type);
 
-            if let Some(prefix) = rule.prefix {
-                expr = prefix(self).into()?;
-            } else {
-                return Err(anyhow!("Expected an expr found None!"));
-            };
-
-            while min <= Self::get_rule::<R>(self.tokens.current).precedence {
-                let Some(infix) = Self::get_rule::<R>(self.tokens.current).infix else {
-                    break;
-                };
-
-                expr = infix(self, &expr).into()?;
-            }
-
-            Ok(expr)
+        if let Some(prefix) = rule.prefix {
+            expr = prefix(self)?;
+        } else {
+            return Err(error::SemaErr::Expected {
+                line: self.line,
+                message: "Expected an expr found None!".to_string(),
+            });
         };
 
-        R::result(result())
+        while min <= Self::get_rule(self.current.token_type).precedence {
+            let Some(infix) = Self::get_rule(self.current.token_type).infix else {
+                break;
+            };
+
+            expr = infix(self, &expr)?;
+        }
+
+        Ok(expr)
     }
 }

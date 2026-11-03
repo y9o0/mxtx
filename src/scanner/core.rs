@@ -44,13 +44,49 @@ impl<'l> Scanner {
                 '(' => self.add_token(TokenType::LeftParen, None),
                 ')' => self.add_token(TokenType::RightParen, None),
                 ',' => self.add_token(TokenType::Comma, None),
-                '/' => self.add_token(TokenType::Div, None),
+                '/' => {
+                    if self.match_next('/') {
+                        while self.peek() != '\0' && !self.is_at_end() {
+                            self.advance();
+                        }
+                    } else {
+                        self.add_token(TokenType::Div, None)
+                    }
+                }
                 '+' => self.add_token(TokenType::Plus, None),
                 '-' => self.add_token(TokenType::Minus, None),
                 '*' => self.add_token(TokenType::Mul, None),
                 '^' => self.add_token(TokenType::Pow, None),
                 '√' => self.add_token(TokenType::Sqrt, None),
                 '=' => self.add_token(TokenType::Equal, None),
+                x if x.is_alphabetic() => {
+                    self.string()?;
+
+                    let Some(last_token) = self.tokens.pop() else {
+                        return Err(error::ScanErr::Unexpected {
+                            line: self.line,
+                            at: "Expected a token found none!".to_string(),
+                        });
+                    };
+
+                    let string: &str = match last_token.literal {
+                        Some(Literal::Ident(ref x)) => x,
+                        _ => {
+                            return Err(error::ScanErr::Expected {
+                                line: self.line,
+                                message: "Expected a string literal found none!".to_string(),
+                            });
+                        }
+                    };
+
+                    if !self.key_words(string) {
+                        self.tokens.push(last_token);
+                    }
+                }
+                x if x.is_numeric() => self.number()?,
+                ' ' | '\r' | '\t' | '\n' => {
+                    self.line += 1;
+                }
                 _ => {
                     return Err(error::ScanErr::Unexpected {
                         line: self.line,
@@ -98,6 +134,84 @@ impl<'l> Scanner {
 
         self.current += 1;
 
+        true
+    }
+
+    fn peek(&mut self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        } else {
+            return self.source[self.current as usize];
+        }
+    }
+
+    fn string(&mut self) -> ScanResult<()> {
+        while !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            return Err(error::ScanErr::Unterminated { line: self.line });
+        }
+
+        let string = self.source[(self.start + 1) as usize..(self.current - 1) as usize]
+            .iter()
+            .collect::<String>();
+
+        self.add_token(TokenType::Ident, Some(Literal::Ident(string)));
+
+        Ok(())
+    }
+
+    fn number(&mut self) -> ScanResult<()> {
+        while self.peek().is_numeric() {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_numeric() {
+            self.advance();
+
+            while self.peek().is_numeric() {
+                self.advance();
+            }
+        }
+
+        let string = self.source[self.start as usize..self.current as usize]
+            .iter()
+            .collect::<String>();
+
+        let Ok(number) = string.trim().parse::<f64>() else {
+            return Err(error::ScanErr::Unexpected {
+                line: self.line,
+                at: string,
+            });
+        };
+
+        self.add_token(TokenType::Num, Some(Literal::Number(number)));
+        Ok(())
+    }
+
+    fn peek_next(&mut self) -> char {
+        if (self.current + 1) as usize >= self.source.len() {
+            return '\0';
+        } else {
+            self.source[(self.current + 1) as usize]
+        }
+    }
+
+    fn key_words(&mut self, ident: &str) -> bool {
+        let matched_on: TokenType = match ident.trim() {
+            "sqrt" => TokenType::Sqrt,
+            _ => {
+                return false;
+            }
+        };
+
+        self.add_token(matched_on, None);
         true
     }
 }

@@ -1,7 +1,6 @@
-use mxtx::scanner::core::Scanner;
+use mxtx::equation;
 
-fn main() -> anyhow::Result<()> {
-    let some_tok = Scanner::new(String::from("=,-")).scanner()?;
-    println!("{:?}", some_tok);
-    Ok(())
+fn main() {
+    let result = equation("(8 + 4) * 3 - 2");
+    println!("{}", result);
 }

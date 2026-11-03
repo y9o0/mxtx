@@ -1,5 +1,5 @@
 pub mod core;
 mod error;
-mod tokens;
+pub mod tokens;
 
 use crate::scanner::tokens::Token;
