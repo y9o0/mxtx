@@ -44,6 +44,18 @@ impl Parser {
         Ok(())
     }
 
+    pub fn match_peek(&mut self, expected: TokenType) -> SemaResult<()> {
+        if self.current.token_type != expected {
+            return Err(error::SemaErr::Syntax {
+                expected,
+                found: self.current.token_type,
+                line: self.line,
+            });
+        }
+
+        Ok(())
+    }
+
     pub fn advance(&mut self) {
         self.previous = std::mem::take(&mut self.current);
 

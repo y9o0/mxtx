@@ -15,7 +15,6 @@ impl Parser {
     }
 
     pub fn unary(&mut self) -> SemaResult<Expr> {
-        self.advance();
         let op = self.previous.token_type;
 
         let right = self.parse_precedence(crate::pratt::Precedence::None)?;
