@@ -13,7 +13,7 @@ pub enum Precedence {
     Term,    // + -
     Factor,  // * /
     Radical, // (sqrt | √) ^
-    Unary,   // -
+    Unary,   // - sin() cos()
     Group,   // ()
     Primary,
 }
@@ -81,6 +81,31 @@ impl Parser {
                 prefix: Some(Parser::unary),
                 infix: None,
                 precedence: Precedence::Radical,
+            },
+            TokenType::Pi => ParseRule {
+                prefix: Some(Parser::symbols),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::EulersNumber => ParseRule {
+                prefix: Some(Parser::symbols),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Sin => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::Unary,
+            },
+            TokenType::Cos => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::Unary,
+            },
+            TokenType::Tan => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
             },
             _ => ParseRule {
                 prefix: None,

@@ -31,11 +31,37 @@ impl Expr {
                     }
                 });
             }
-            _ => {
-                return Err(GenErr::Unexpected {
-                    at: "codegen".to_string(),
-                    message: format!("'{:?}' expr", expr),
-                });
+            Expr::Radical { operator, right } => {
+                let right = Self::codegen(right)?;
+
+                let rn = right.unpack_num()?;
+
+                Ok(match operator {
+                    TokenType::Sqrt => Expr::Number(rn.sqrt()),
+                    _ => {
+                        return Err(GenErr::Unexpected {
+                            at: "codegen 'radical'".to_string(),
+                            message: format!("'{:?}'", operator),
+                        });
+                    }
+                })
+            }
+            Expr::Trig { function, body } => {
+                let body = Self::codegen(body)?;
+
+                let result = body.unpack_num()?;
+
+                Ok(match function {
+                    TokenType::Sin => Expr::Number(result.sin()),
+                    TokenType::Cos => Expr::Number(result.cos()),
+                    TokenType::Tan => Expr::Number(result.tan()),
+                    _ => {
+                        return Err(GenErr::Unexpected {
+                            at: "codegen 'trig'".to_string(),
+                            message: format!("'{:?}'", function),
+                        });
+                    }
+                })
             }
         }
     }

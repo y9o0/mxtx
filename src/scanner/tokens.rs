@@ -15,6 +15,13 @@ pub enum TokenType {
     Num,   // number literals
     Ident, // string literals
 
+    Pi,           // pi or π
+    EulersNumber, // e
+
+    Sin, // sin
+    Cos, // Cos
+    Tan, // tan
+
     Eof, // end of file
 
     #[default]

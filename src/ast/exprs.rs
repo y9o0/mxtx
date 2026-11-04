@@ -15,5 +15,10 @@ pub enum Expr {
         right: Box<Expr>,
     },
 
+    Trig {
+        function: TokenType,
+        body: Box<Expr>,
+    },
+
     Group(Box<Expr>),
 }

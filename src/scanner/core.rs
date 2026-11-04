@@ -59,6 +59,8 @@ impl<'l> Scanner {
                 '^' => self.add_token(TokenType::Pow, None),
                 '√' => self.add_token(TokenType::Sqrt, None),
                 '=' => self.add_token(TokenType::Equal, None),
+                'π' => self.add_token(TokenType::Pi, None),
+                'e' => self.add_token(TokenType::EulersNumber, None),
                 x if x.is_alphabetic() => {
                     self.string()?;
 
@@ -87,6 +89,7 @@ impl<'l> Scanner {
                 ' ' | '\r' | '\t' | '\n' => {
                     self.line += 1;
                 }
+
                 _ => {
                     return Err(error::ScanErr::Unexpected {
                         line: self.line,
@@ -146,7 +149,7 @@ impl<'l> Scanner {
     }
 
     fn string(&mut self) -> ScanResult<()> {
-        while !self.is_at_end() {
+        while !self.is_at_end() && self.peek().is_alphabetic() {
             if self.peek() == '\n' {
                 self.line += 1;
             }
@@ -158,7 +161,7 @@ impl<'l> Scanner {
             return Err(error::ScanErr::Unterminated { line: self.line });
         }
 
-        let string = self.source[(self.start + 1) as usize..(self.current - 1) as usize]
+        let string = self.source[(self.start) as usize..(self.current) as usize]
             .iter()
             .collect::<String>();
 
@@ -206,6 +209,10 @@ impl<'l> Scanner {
     fn key_words(&mut self, ident: &str) -> bool {
         let matched_on: TokenType = match ident.trim() {
             "sqrt" => TokenType::Sqrt,
+            "pi" => TokenType::Pi,
+            "sin" => TokenType::Sin,
+            "cos" => TokenType::Cos,
+            "tan" => TokenType::Tan,
             _ => {
                 return false;
             }
