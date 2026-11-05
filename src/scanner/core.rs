@@ -59,6 +59,20 @@ impl<'l> Scanner {
                 '^' => self.add_token(TokenType::Pow, None),
                 '√' => self.add_token(TokenType::Sqrt, None),
                 '=' => self.add_token(TokenType::Equal, None),
+                '>' => {
+                    if self.match_next('=') {
+                        self.add_token(TokenType::GreaterEq, None);
+                    } else {
+                        self.add_token(TokenType::Greater, None);
+                    }
+                }
+                '<' => {
+                    if self.match_next('=') {
+                        self.add_token(TokenType::LesserEq, None);
+                    } else {
+                        self.add_token(TokenType::Lesser, None);
+                    }
+                }
                 'π' => self.add_token(TokenType::Pi, None),
                 'e' => self.add_token(TokenType::EulersNumber, None),
                 x if x.is_alphabetic() => {

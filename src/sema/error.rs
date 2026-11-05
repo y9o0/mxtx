@@ -11,6 +11,9 @@ pub enum SemaErr {
         found: TokenType,
         line: u32,
     },
+
+    #[error("Unexpected '{}' at line '{}'", message, line)]
+    Unexpected { line: u32, message: String },
 }
 
 pub type SemaResult<T> = std::result::Result<T, SemaErr>;

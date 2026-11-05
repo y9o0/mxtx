@@ -10,11 +10,12 @@ use crate::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum Precedence {
     None,
-    Term,    // + -
-    Factor,  // * /
-    Radical, // (sqrt | √) ^
-    Unary,   // - sin() cos()
-    Group,   // ()
+    Comparison, // > < >= <=
+    Term,       // + -
+    Factor,     // * /
+    Radical,    // (sqrt | √) ^
+    Unary,      // - sin() cos()
+    Group,      // ()
     Primary,
 }
 
@@ -29,7 +30,8 @@ pub struct ParseRule {
 impl Precedence {
     pub fn next(self) -> Precedence {
         match self {
-            Precedence::None => Precedence::Term,
+            Precedence::None => Precedence::Comparison,
+            Precedence::Comparison => Precedence::Term,
             Precedence::Term => Precedence::Factor,
             Precedence::Factor => Precedence::Unary,
             Precedence::Unary => Precedence::Radical,
@@ -105,6 +107,31 @@ impl Parser {
             TokenType::Tan => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Greater => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
+            },
+            TokenType::GreaterEq => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
+            },
+            TokenType::Lesser => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
+            },
+            TokenType::LesserEq => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
+            },
+            TokenType::Equal => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
                 precedence: Precedence::None,
             },
             _ => ParseRule {

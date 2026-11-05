@@ -4,6 +4,8 @@ use super::*;
 pub enum Expr {
     Number(f64),
 
+    Bool(bool),
+
     Binary {
         left: Box<Expr>,
         right: Box<Expr>,

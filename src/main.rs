@@ -1,6 +1,6 @@
-use mxtx::equation;
+use mxtx::{equation, sema::core::Answer};
 
 fn main() {
-    let result = equation("(8 + 4) + tan(cos(sin(sqrt (pi * 3 - 2 * e))))").as_num();
+    let result: Answer = equation("(8 + 4) + tan(cos(sin(sqrt (pi * 3 - 2 * e)))) < 1^9");
     println!("{}", result);
 }

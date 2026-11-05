@@ -23,6 +23,11 @@ impl Expr {
                     TokenType::Div => Expr::Number(ln / rn),
                     TokenType::Mul => Expr::Number(ln * rn),
                     TokenType::Pow => Expr::Number(ln.powf(rn)),
+                    TokenType::Greater => Expr::Bool(ln > rn),
+                    TokenType::GreaterEq => Expr::Bool(ln >= rn),
+                    TokenType::Lesser => Expr::Bool(ln < rn),
+                    TokenType::LesserEq => Expr::Bool(ln <= rn),
+                    TokenType::Equal => Expr::Bool(ln == rn),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codgen 'binary'".to_string(),
@@ -63,6 +68,7 @@ impl Expr {
                     }
                 })
             }
+            Expr::Bool(x) => Ok(Expr::Bool(*x)),
         }
     }
 }

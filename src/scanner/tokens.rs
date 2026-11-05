@@ -12,6 +12,11 @@ pub enum TokenType {
     Pow,   // ^
     Sqrt,  // sqrt | √
 
+    Greater,   // >
+    GreaterEq, // >=
+    Lesser,    // <
+    LesserEq,  // <=
+
     Num,   // number literals
     Ident, // string literals
 
@@ -36,7 +41,7 @@ pub struct Token {
     pub line: u32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     Number(f64),
     Ident(String),
