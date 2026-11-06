@@ -1,7 +1,10 @@
 use std::{f64::consts::E, f64::consts::PI};
 
 use crate::{
-    scanner::tokens::{Literal, TokenType},
+    scanner::tokens::{
+        Literal,
+        TokenType::{self, Underscore},
+    },
     sema::error::SemaErr,
 };
 
@@ -51,6 +54,43 @@ impl Parser {
                     line: self.line,
                 });
             }
+        })
+    }
+
+    pub fn absolute(&mut self) -> SemaResult<Expr> {
+        let inner = self.parse_precedence(crate::pratt::Precedence::None)?;
+        self.match_err(TokenType::Pipe)?;
+        Ok(Expr::Absolute(Box::new(inner)))
+    }
+
+    pub fn logarithm(&mut self) -> SemaResult<Expr> {
+        let function = self.previous.token_type;
+        let is_log = function == TokenType::Log;
+        let mut base: Option<Box<Expr>> = None;
+
+        if self.current.token_type == TokenType::Underscore && is_log {
+            self.advance();
+
+            base = Some(Box::new(
+                self.parse_precedence(crate::pratt::Precedence::None)?,
+            ));
+        }
+
+        if self.current.token_type == TokenType::Underscore && function == TokenType::Ln {
+            return Err(SemaErr::Syntax {
+                expected: TokenType::LeftParen,
+                found: Underscore,
+                line: self.line,
+            });
+        }
+
+        self.match_err(TokenType::LeftParen)?;
+        let expr = self.group()?;
+
+        Ok(Expr::Logarithm {
+            function,
+            base,
+            body: Box::new(expr),
         })
     }
 }

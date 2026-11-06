@@ -15,7 +15,7 @@ pub enum Precedence {
     Factor,     // * /
     Radical,    // (sqrt | √) ^
     Unary,      // - sin() cos()
-    Group,      // ()
+    Group,      // () | |
     Primary,
 }
 
@@ -132,6 +132,21 @@ impl Parser {
             TokenType::Equal => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
+                precedence: Precedence::None,
+            },
+            TokenType::Pipe => ParseRule {
+                prefix: Some(Parser::absolute),
+                infix: None,
+                precedence: Precedence::Group,
+            },
+            TokenType::Log => ParseRule {
+                prefix: Some(Parser::logarithm),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Ln => ParseRule {
+                prefix: Some(Parser::logarithm),
+                infix: None,
                 precedence: Precedence::None,
             },
             _ => ParseRule {

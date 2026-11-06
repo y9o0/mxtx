@@ -22,5 +22,13 @@ pub enum Expr {
         body: Box<Expr>,
     },
 
+    Logarithm {
+        function: TokenType,
+        base: Option<Box<Expr>>,
+        body: Box<Expr>,
+    },
+
     Group(Box<Expr>),
+
+    Absolute(Box<Expr>),
 }

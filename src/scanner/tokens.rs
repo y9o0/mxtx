@@ -3,14 +3,16 @@ pub enum TokenType {
     LeftParen,  // (
     RightParen, // )
 
-    Equal, // =
-    Comma, // ,
-    Plus,  // +
-    Minus, // -
-    Mul,   // *
-    Div,   // /
-    Pow,   // ^
-    Sqrt,  // sqrt | √
+    Equal,      // =
+    Comma,      // ,
+    Plus,       // +
+    Minus,      // -
+    Mul,        // *
+    Div,        // /
+    Pow,        // ^
+    Sqrt,       // sqrt | √
+    Pipe,       // |
+    Underscore, // _
 
     Greater,   // >
     GreaterEq, // >=
@@ -26,6 +28,9 @@ pub enum TokenType {
     Sin, // sin
     Cos, // Cos
     Tan, // tan
+
+    Log, // log
+    Ln,  // ln
 
     Eof, // end of file
 

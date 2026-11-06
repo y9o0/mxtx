@@ -43,6 +43,7 @@ impl Expr {
 
                 Ok(match operator {
                     TokenType::Sqrt => Expr::Number(rn.sqrt()),
+                    TokenType::Minus => Expr::Number(-rn),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codegen 'radical'".to_string(),
@@ -69,6 +70,40 @@ impl Expr {
                 })
             }
             Expr::Bool(x) => Ok(Expr::Bool(*x)),
+            Expr::Absolute(x) => {
+                let result = Self::codegen(&*x)?;
+
+                let rn = result.unpack_num()?;
+
+                Ok(Expr::Number(rn.abs()))
+            }
+            Expr::Logarithm {
+                function,
+                base,
+                body,
+            } => {
+                let body = Self::codegen(body)?;
+
+                let mut b: Option<Expr> = None;
+
+                if let Some(x) = base {
+                    b = Some(Self::codegen(&x)?);
+                }
+
+                Ok(match function {
+                    TokenType::Log => Expr::Number(
+                        body.unpack_num()?
+                            .log(b.unwrap_or(Expr::Number(10.0)).unpack_num()?),
+                    ),
+                    TokenType::Ln => Expr::Number(body.unpack_num()?.ln()),
+                    _ => {
+                        return Err(GenErr::Unexpected {
+                            at: "codegen 'log'".to_string(),
+                            message: format!("'{:?}'", function),
+                        });
+                    }
+                })
+            }
         }
     }
 }

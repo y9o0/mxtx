@@ -59,6 +59,7 @@ impl<'l> Scanner {
                 '^' => self.add_token(TokenType::Pow, None),
                 '√' => self.add_token(TokenType::Sqrt, None),
                 '=' => self.add_token(TokenType::Equal, None),
+                '_' => self.add_token(TokenType::Underscore, None),
                 '>' => {
                     if self.match_next('=') {
                         self.add_token(TokenType::GreaterEq, None);
@@ -73,6 +74,7 @@ impl<'l> Scanner {
                         self.add_token(TokenType::Lesser, None);
                     }
                 }
+                '|' => self.add_token(TokenType::Pipe, None),
                 'π' => self.add_token(TokenType::Pi, None),
                 'e' => self.add_token(TokenType::EulersNumber, None),
                 x if x.is_alphabetic() => {
@@ -227,6 +229,8 @@ impl<'l> Scanner {
             "sin" => TokenType::Sin,
             "cos" => TokenType::Cos,
             "tan" => TokenType::Tan,
+            "log" => TokenType::Log,
+            "ln" => TokenType::Ln,
             _ => {
                 return false;
             }
