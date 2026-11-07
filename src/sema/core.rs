@@ -79,6 +79,7 @@ impl Parser {
         self.advance();
 
         let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
+
         let result = Expr::codegen(&expr).unwrap();
 
         Ok(match result {

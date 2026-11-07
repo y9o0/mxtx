@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::*;
 
 #[derive(Debug, Clone)]
@@ -5,6 +7,8 @@ pub enum Expr {
     Number(f64),
 
     Bool(bool),
+
+    Ident(String),
 
     Binary {
         left: Box<Expr>,
@@ -28,7 +32,17 @@ pub enum Expr {
         body: Box<Expr>,
     },
 
+    Where {
+        left: Box<Expr>,
+        right: HashMap<String, f64>,
+    },
+
     Group(Box<Expr>),
 
     Absolute(Box<Expr>),
+
+    Suffix {
+        left: Box<Expr>,
+        operator: TokenType,
+    },
 }

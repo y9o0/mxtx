@@ -1,4 +1,4 @@
-use std::{f64::consts::E, f64::consts::PI};
+use std::f64::consts::{E, GOLDEN_RATIO, PI};
 
 use crate::{
     scanner::tokens::{
@@ -35,6 +35,30 @@ impl Parser {
         }
     }
 
+    pub fn ident(&mut self) -> SemaResult<Expr> {
+        match self.previous.literal {
+            Some(ref v) => {
+                let Literal::Ident(x) = v else {
+                    return Err(error::SemaErr::Expected {
+                        line: self.line,
+                        message: format!(
+                            "Expected a string literal found '{:?}'",
+                            self.previous.token_type
+                        ),
+                    });
+                };
+
+                return Ok(Expr::Ident(x.to_string()));
+            }
+            None => {
+                return Err(error::SemaErr::Expected {
+                    line: self.line,
+                    message: format!("Expcted a literal found '{:?}' ", self.previous.token_type),
+                });
+            }
+        }
+    }
+
     pub fn group(&mut self) -> SemaResult<Expr> {
         let inner = self.parse_precedence(crate::pratt::Precedence::None)?;
         self.match_err(crate::scanner::tokens::TokenType::RightParen)?;
@@ -47,6 +71,7 @@ impl Parser {
         Ok(match sym {
             TokenType::Pi => Expr::Number(PI),
             TokenType::EulersNumber => Expr::Number(E),
+            TokenType::GoldenRatio => Expr::Number(GOLDEN_RATIO),
             _ => {
                 return Err(SemaErr::Syntax {
                     expected: TokenType::Pi,

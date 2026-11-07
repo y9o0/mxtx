@@ -58,8 +58,12 @@ impl<'l> Scanner {
                 '*' => self.add_token(TokenType::Mul, None),
                 '^' => self.add_token(TokenType::Pow, None),
                 '√' => self.add_token(TokenType::Sqrt, None),
+                '÷' => self.add_token(TokenType::Div, None),
+                '·' => self.add_token(TokenType::Mul, None),
+                '!' => self.add_token(TokenType::Bang, None),
                 '=' => self.add_token(TokenType::Equal, None),
                 '_' => self.add_token(TokenType::Underscore, None),
+                'φ' => self.add_token(TokenType::GoldenRatio, None),
                 '>' => {
                     if self.match_next('=') {
                         self.add_token(TokenType::GreaterEq, None);
@@ -226,11 +230,15 @@ impl<'l> Scanner {
         let matched_on: TokenType = match ident.trim() {
             "sqrt" => TokenType::Sqrt,
             "pi" => TokenType::Pi,
+            "gr" => TokenType::GoldenRatio,
             "sin" => TokenType::Sin,
             "cos" => TokenType::Cos,
             "tan" => TokenType::Tan,
             "log" => TokenType::Log,
             "ln" => TokenType::Ln,
+            "mod" => TokenType::Mod,
+            "where" => TokenType::Where,
+            "and" => TokenType::And,
             _ => {
                 return false;
             }

@@ -12,7 +12,7 @@ pub enum Precedence {
     None,
     Comparison, // > < >= <=
     Term,       // + -
-    Factor,     // * /
+    Factor,     // * / mod
     Radical,    // (sqrt | √) ^
     Unary,      // - sin() cos()
     Group,      // () | |
@@ -148,6 +148,31 @@ impl Parser {
                 prefix: Some(Parser::logarithm),
                 infix: None,
                 precedence: Precedence::None,
+            },
+            TokenType::Ident => ParseRule {
+                prefix: Some(Parser::ident),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Where => ParseRule {
+                prefix: None,
+                infix: Some(Parser::where_stmt),
+                precedence: Precedence::None,
+            },
+            TokenType::Bang => ParseRule {
+                prefix: None,
+                infix: Some(Parser::suffix),
+                precedence: Precedence::Unary,
+            },
+            TokenType::GoldenRatio => ParseRule {
+                prefix: Some(Parser::symbols),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Mod => ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Factor,
             },
             _ => ParseRule {
                 prefix: None,

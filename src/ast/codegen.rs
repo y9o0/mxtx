@@ -28,6 +28,7 @@ impl Expr {
                     TokenType::Lesser => Expr::Bool(ln < rn),
                     TokenType::LesserEq => Expr::Bool(ln <= rn),
                     TokenType::Equal => Expr::Bool(ln == rn),
+                    TokenType::Mod => Expr::Number(ln % rn),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codgen 'binary'".to_string(),
@@ -44,6 +45,7 @@ impl Expr {
                 Ok(match operator {
                     TokenType::Sqrt => Expr::Number(rn.sqrt()),
                     TokenType::Minus => Expr::Number(-rn),
+                    TokenType::Bang => Expr::Number((1..=rn as u64).fold(1.0, |a, i| a * i as f64)),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codegen 'radical'".to_string(),
@@ -103,6 +105,30 @@ impl Expr {
                         });
                     }
                 })
+            }
+            Expr::Ident(x) => Ok(Expr::Ident(x.to_string())),
+
+            Expr::Suffix { left, operator } => {
+                let left = Self::codegen(left)?;
+
+                let ln = left.unpack_num()?;
+
+                Ok(match operator {
+                    TokenType::Bang => Expr::Number((1..=ln as u64).fold(1.0, |a, i| a * i as f64)),
+                    _ => {
+                        return Err(GenErr::Unexpected {
+                            at: "codegen 'suffix'".to_string(),
+                            message: format!("Unexpected operator '{:?}'", operator),
+                        });
+                    }
+                })
+            }
+
+            Expr::Where { left, right } => {
+                let left = left.to_owned().rep(right)?;
+                let result = Self::codegen(&left)?;
+
+                Ok(Expr::Number(result.unpack_num()?))
             }
         }
     }

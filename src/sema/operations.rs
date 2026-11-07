@@ -24,4 +24,15 @@ impl Parser {
             right: Box::new(right),
         })
     }
+
+    pub fn suffix(&mut self, left: &Expr) -> SemaResult<Expr> {
+        self.advance();
+
+        let op = self.previous.token_type;
+
+        Ok(Expr::Suffix {
+            left: Box::new(left.to_owned()),
+            operator: op,
+        })
+    }
 }

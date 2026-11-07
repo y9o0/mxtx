@@ -8,11 +8,12 @@ pub enum TokenType {
     Plus,       // +
     Minus,      // -
     Mul,        // *
-    Div,        // /
+    Div,        // / ÷
     Pow,        // ^
     Sqrt,       // sqrt | √
     Pipe,       // |
     Underscore, // _
+    Bang,       // !
 
     Greater,   // >
     GreaterEq, // >=
@@ -24,6 +25,7 @@ pub enum TokenType {
 
     Pi,           // pi or π
     EulersNumber, // e
+    GoldenRatio,  // φ or gr
 
     Sin, // sin
     Cos, // Cos
@@ -31,6 +33,11 @@ pub enum TokenType {
 
     Log, // log
     Ln,  // ln
+
+    Mod, // mod
+
+    Where, // where
+    And,   // and
 
     Eof, // end of file
 
