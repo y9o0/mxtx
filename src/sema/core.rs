@@ -10,11 +10,19 @@ pub struct Parser {
     pub current: Token,
     pub previous: Token,
     pub line: u32,
+    pub checkers: Checkers,
+}
+
+#[derive(Debug)]
+pub struct Checkers {
+    pub has_ident: bool,
+    pub has_where: bool,
 }
 
 pub enum Answer {
     Num(f64),
     Bool(bool),
+    Eval(Expr),
 }
 
 pub trait FromAnswer {
@@ -61,6 +69,7 @@ impl fmt::Display for Answer {
         match self {
             Self::Bool(x) => write!(f, "{}", x),
             Self::Num(x) => write!(f, "{}", x),
+            Self::Eval(x) => write!(f, "{:?}", x),
         }
     }
 }
@@ -72,6 +81,11 @@ impl Parser {
             current: Token::default(),
             previous: Token::default(),
             line: 0,
+
+            checkers: Checkers {
+                has_ident: false,
+                has_where: false,
+            },
         }
     }
 
@@ -79,6 +93,10 @@ impl Parser {
         self.advance();
 
         let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
+
+        if self.checkers.has_ident && !self.checkers.has_where {
+            return Ok(Answer::Eval(expr));
+        }
 
         let result = Expr::codegen(&expr).unwrap();
 

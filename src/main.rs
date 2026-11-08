@@ -1,6 +1,10 @@
-use mxtx::{equation, sema::core::Answer};
+use mxtx::{equation, eval, sema::core::Answer};
 
 fn main() {
-    let result: Answer = equation("(x! · φ ÷ 700.2130) mod e where x = 10");
-    println!("{}", result)
+    for i in 0..=100 {
+        let eq: Answer = equation("x!");
+        let result = eval!(eq, x = i as f64);
+
+        println!("{}", result);
+    }
 }

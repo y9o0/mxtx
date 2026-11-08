@@ -36,14 +36,14 @@ impl Expr {
         }
     }
 
-    pub fn rep(self, values: &HashMap<String, f64>) -> GenResult<Expr> {
+    pub fn rep(&self, values: &HashMap<String, f64>) -> GenResult<Expr> {
         match self {
-            Expr::Number(x) => Ok(Expr::Number(x)),
+            Expr::Number(x) => Ok(Expr::Number(*x)),
 
-            Expr::Bool(x) => Ok(Expr::Bool(x)),
+            Expr::Bool(x) => Ok(Expr::Bool(*x)),
 
             Expr::Ident(x) => {
-                let value = match values.get(&x) {
+                let value = match values.get(x) {
                     Some(x) => x,
                     None => {
                         return Err(GenErr::Unexpected {
@@ -65,31 +65,22 @@ impl Expr {
                 right,
                 operator,
             } => {
-                if left.unpack_num().is_ok() && right.unpack_num().is_ok() {
-                    return Ok(Expr::Binary {
-                        left,
-                        right,
-                        operator,
-                    });
-                }
-
                 let left = left.rep(values)?;
-
                 let right = right.rep(values)?;
 
                 Ok(Expr::Binary {
                     left: Box::new(left),
                     right: Box::new(right),
-                    operator,
+                    operator: *operator,
                 })
             }
             Expr::Radical { operator, right } => Ok(Expr::Radical {
-                operator,
+                operator: *operator,
                 right: Box::new(right.rep(values)?),
             }),
 
             Expr::Trig { function, body } => Ok(Expr::Trig {
-                function,
+                function: *function,
                 body: Box::new(body.rep(values)?),
             }),
 
@@ -105,7 +96,7 @@ impl Expr {
                 }
 
                 Ok(Expr::Logarithm {
-                    function,
+                    function: *function,
                     base: b,
                     body: Box::new(body.rep(values)?),
                 })
@@ -113,7 +104,7 @@ impl Expr {
 
             Expr::Suffix { left, operator } => Ok(Expr::Suffix {
                 left: Box::new(left.rep(values)?),
-                operator,
+                operator: *operator,
             }),
 
             _ => {

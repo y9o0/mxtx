@@ -48,6 +48,7 @@ impl Parser {
                     });
                 };
 
+                self.checkers.has_ident = true;
                 return Ok(Expr::Ident(x.to_string()));
             }
             None => {

@@ -26,6 +26,8 @@ impl Parser {
             }
         }
 
+        self.checkers.has_where = true;
+
         Ok(Expr::Where {
             left: Box::new(left.to_owned()),
             right: values,

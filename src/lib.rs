@@ -1,8 +1,10 @@
-use crate::sema::core::{Answer, Parser};
+pub use crate::ast::exprs::Expr;
+pub use crate::sema::core::{Answer, Parser};
 
-pub mod ast;
-pub mod pratt;
-pub mod scanner;
+pub(self) mod ast;
+pub(self) mod macros;
+pub(self) mod pratt;
+pub(self) mod scanner;
 pub mod sema;
 
 pub fn equation(equation: &str) -> Answer {
