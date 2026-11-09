@@ -128,7 +128,7 @@ impl Expr {
                 let left = left.to_owned().rep(right)?;
                 let result = Self::codegen(&left)?;
 
-                Ok(Expr::Number(result.unpack_num()?))
+                Ok(result)
             }
         }
     }

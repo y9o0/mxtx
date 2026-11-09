@@ -177,10 +177,6 @@ impl<'l> Scanner {
             self.advance();
         }
 
-        if self.is_at_end() {
-            return Err(error::ScanErr::Unterminated { line: self.line });
-        }
-
         let string = self.source[(self.start) as usize..(self.current) as usize]
             .iter()
             .collect::<String>();

@@ -12,7 +12,7 @@ use super::*;
 
 impl Parser {
     pub fn numbers(&mut self) -> SemaResult<Expr> {
-        match self.previous.literal {
+        let result: SemaResult<Expr> = match self.previous.literal {
             Some(ref v) => {
                 let Literal::Number(x) = v else {
                     return Err(error::SemaErr::Expected {
@@ -24,7 +24,7 @@ impl Parser {
                     });
                 };
 
-                return Ok(Expr::Number(*x));
+                Ok(Expr::Number(*x))
             }
             None => {
                 return Err(error::SemaErr::Expected {
@@ -32,6 +32,13 @@ impl Parser {
                     message: format!("Expcted a literal found '{:?}' ", self.previous.token_type),
                 });
             }
+        };
+
+        if Self::is_impl_mul(&self.current.token_type) {
+            let res = result?;
+            return Ok(self.implicit_mul(&res)?);
+        } else {
+            return Ok(result?);
         }
     }
 
@@ -118,5 +125,33 @@ impl Parser {
             base,
             body: Box::new(expr),
         })
+    }
+
+    pub fn implicit_mul(&mut self, left: &Expr) -> SemaResult<Expr> {
+        let right = self.parse_precedence(crate::pratt::Precedence::Factor)?;
+
+        Ok(Expr::Binary {
+            left: Box::new(left.to_owned()),
+            right: Box::new(right),
+            operator: TokenType::Mul,
+        })
+    }
+
+    fn is_impl_mul(tok: &TokenType) -> bool {
+        matches!(
+            tok,
+            TokenType::LeftParen
+                | TokenType::Ident
+                | TokenType::EulersNumber
+                | TokenType::GoldenRatio
+                | TokenType::Cos
+                | TokenType::Sin
+                | TokenType::Tan
+                | TokenType::Ln
+                | TokenType::Log
+                | TokenType::Pipe
+                | TokenType::Sqrt
+                | TokenType::Pi
+        )
     }
 }
