@@ -1,15 +1,8 @@
-use mxtx::{equation, eval, sema::core::Answer};
+use mxtx::function;
 
 fn main() {
-    let eq: Answer = equation("x^2 - 61y^2 = 1");
+    function!(f(x, y) = "x^2 - y = 1");
+    let result = f(10.0, 9.0);
 
-    for y in 0..=100 {
-        let x = y + 1;
-
-        let result = eval!(eq, x = x as f64, y = y as f64);
-
-        if result.get::<bool>().is_some_and(|r| r == true) {
-            println!("({},{}) are a solution for the Pell equation ", x, y)
-        }
-    }
+    println!("{}", result)
 }

@@ -174,6 +174,36 @@ impl Parser {
                 infix: Some(Parser::binary),
                 precedence: Precedence::Factor,
             },
+            TokenType::ArcSin => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::ArcCos => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::ArcTan => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Csc => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Sec => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
+            TokenType::Cot => ParseRule {
+                prefix: Some(Parser::trig_functions),
+                infix: None,
+                precedence: Precedence::None,
+            },
             _ => ParseRule {
                 prefix: None,
                 infix: None,

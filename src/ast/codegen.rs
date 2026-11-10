@@ -63,6 +63,12 @@ impl Expr {
                     TokenType::Sin => Expr::Number(result.sin()),
                     TokenType::Cos => Expr::Number(result.cos()),
                     TokenType::Tan => Expr::Number(result.tan()),
+                    TokenType::ArcSin => Expr::Number(result.asin()),
+                    TokenType::ArcCos => Expr::Number(result.acos()),
+                    TokenType::ArcTan => Expr::Number(result.atan()),
+                    TokenType::Csc => Expr::Number(1.0 / result.sin()),
+                    TokenType::Sec => Expr::Number(1.0 / result.cos()),
+                    TokenType::Cot => Expr::Number(1.0 / result.tan()),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codegen 'trig'".to_string(),

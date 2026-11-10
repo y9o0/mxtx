@@ -27,9 +27,15 @@ pub enum TokenType {
     EulersNumber, // e
     GoldenRatio,  // φ or gr
 
-    Sin, // sin
-    Cos, // Cos
-    Tan, // tan
+    Sin,    // sin
+    Cos,    // Cos
+    Tan,    // tan
+    ArcSin, // asin
+    ArcCos, // acos
+    ArcTan, // atan
+    Csc,    // Csc
+    Sec,    // Sec
+    Cot,    // Cot
 
     Log, // log
     Ln,  // ln

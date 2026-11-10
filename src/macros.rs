@@ -24,3 +24,16 @@ macro_rules! eval {
         }
     }
 }
+
+#[macro_export]
+macro_rules! function {
+    ($name:ident ( $($p:ident),* ) = $eq:expr) => {
+        fn $name($ ($p: f64),* ) -> $crate::Answer {
+            let eq : &str = $eq;
+            let ans = $crate::Parser::new(eq.to_string()).equation().unwrap();
+
+            let result = $crate::eval!(ans, $($p = $p),*);
+            result
+        }
+    };
+}

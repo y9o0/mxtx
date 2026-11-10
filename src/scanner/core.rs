@@ -235,6 +235,12 @@ impl<'l> Scanner {
             "mod" => TokenType::Mod,
             "where" => TokenType::Where,
             "and" => TokenType::And,
+            "asin" => TokenType::ArcSin,
+            "acos" => TokenType::ArcCos,
+            "atan" => TokenType::ArcTan,
+            "csc" => TokenType::Csc,
+            "sec" => TokenType::Sec,
+            "cot" => TokenType::Cot,
             _ => {
                 return false;
             }

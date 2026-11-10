@@ -36,6 +36,13 @@ impl Expr {
         }
     }
 
+    pub fn is_ident(&self) -> bool {
+        match self {
+            Expr::Ident(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn rep(&self, values: &HashMap<String, f64>) -> GenResult<Expr> {
         match self {
             Expr::Number(x) => Ok(Expr::Number(*x)),
