@@ -26,7 +26,7 @@ macro_rules! eval {
 }
 
 #[macro_export]
-macro_rules! function {
+macro_rules! equation {
     ($name:ident ( $($p:ident),* ) = $eq:expr) => {
         fn $name($ ($p: f64),* ) -> $crate::Answer {
             let eq : &str = $eq;
@@ -36,4 +36,11 @@ macro_rules! function {
             result
         }
     };
+
+    ($eq:expr) => {
+        {
+            let eq : &str = $eq;
+            $crate::Parser::new(eq.to_string()).equation().unwrap()
+        }
+    }
 }
