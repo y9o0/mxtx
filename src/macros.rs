@@ -30,6 +30,8 @@ macro_rules! equation {
     ($name:ident ( $($p:ident),* ) = $eq:expr) => {
         fn $name($ ($p: f64),* ) -> $crate::Answer {
             let eq : &str = $eq;
+            let eq = format!("IaF {}", eq);
+
             let ans = $crate::Parser::new(eq.to_string()).equation().unwrap();
 
             let result = $crate::eval!(ans, $($p = $p),*);

@@ -5,7 +5,8 @@ impl Parser {
         let function = self.previous.token_type;
 
         self.match_err(TokenType::LeftParen)?;
-        let expr = self.group()?;
+        let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
+        self.match_err(TokenType::RightParen)?;
 
         Ok(Expr::Trig {
             function,

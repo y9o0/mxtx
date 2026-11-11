@@ -44,6 +44,7 @@ pub enum TokenType {
 
     Where, // where
     And,   // and
+    IaF,   // inside a function
 
     Eof, // end of file
 

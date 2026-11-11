@@ -13,8 +13,9 @@ pub enum Precedence {
     Comparison, // > < >= <=
     Term,       // + -
     Factor,     // * / mod
-    Radical,    // (sqrt | √) ^
-    Unary,      // - sin() cos()
+    Unary,      // - (sqrt | √) preifx()
+    Power,      // ^
+    Postfix,    // !
     Group,      // () | |
     Primary,
 }
@@ -34,9 +35,11 @@ impl Precedence {
             Precedence::Comparison => Precedence::Term,
             Precedence::Term => Precedence::Factor,
             Precedence::Factor => Precedence::Unary,
-            Precedence::Unary => Precedence::Radical,
-            Precedence::Radical => Precedence::Group,
-            _ => Precedence::Primary,
+            Precedence::Unary => Precedence::Power,
+            Precedence::Power => Precedence::Postfix,
+            Precedence::Postfix => Precedence::Group,
+            Precedence::Group => Precedence::Primary,
+            Precedence::Primary => Precedence::Primary,
         }
     }
 }
@@ -72,7 +75,7 @@ impl Parser {
             TokenType::Pow => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Radical,
+                precedence: Precedence::Power,
             },
             TokenType::LeftParen => ParseRule {
                 prefix: Some(Parser::group),
@@ -82,7 +85,7 @@ impl Parser {
             TokenType::Sqrt => ParseRule {
                 prefix: Some(Parser::unary),
                 infix: None,
-                precedence: Precedence::Radical,
+                precedence: Precedence::Unary,
             },
             TokenType::Pi => ParseRule {
                 prefix: Some(Parser::symbols),
@@ -107,7 +110,7 @@ impl Parser {
             TokenType::Tan => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Greater => ParseRule {
                 prefix: None,
@@ -132,7 +135,7 @@ impl Parser {
             TokenType::Equal => ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::None,
+                precedence: Precedence::Comparison,
             },
             TokenType::Pipe => ParseRule {
                 prefix: Some(Parser::absolute),
@@ -142,12 +145,12 @@ impl Parser {
             TokenType::Log => ParseRule {
                 prefix: Some(Parser::logarithm),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Ln => ParseRule {
                 prefix: Some(Parser::logarithm),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Ident => ParseRule {
                 prefix: Some(Parser::ident),
@@ -161,8 +164,8 @@ impl Parser {
             },
             TokenType::Bang => ParseRule {
                 prefix: None,
-                infix: Some(Parser::suffix),
-                precedence: Precedence::Unary,
+                infix: Some(Parser::postfix),
+                precedence: Precedence::Postfix,
             },
             TokenType::GoldenRatio => ParseRule {
                 prefix: Some(Parser::symbols),
@@ -177,32 +180,32 @@ impl Parser {
             TokenType::ArcSin => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::ArcCos => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::ArcTan => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Csc => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Sec => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             TokenType::Cot => ParseRule {
                 prefix: Some(Parser::trig_functions),
                 infix: None,
-                precedence: Precedence::None,
+                precedence: Precedence::Unary,
             },
             _ => ParseRule {
                 prefix: None,

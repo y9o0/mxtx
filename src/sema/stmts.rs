@@ -14,10 +14,10 @@ impl Parser {
 
             self.match_err(TokenType::Equal)?;
 
-            self.advance();
-            let value = self.numbers()?.unpack_num().unwrap();
+            let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
+            let result = Expr::codegen(&expr).unwrap().unpack_num().unwrap();
 
-            values.insert(ident, value);
+            values.insert(ident, result);
 
             if self.previous.token_type == TokenType::And {
                 self.advance();

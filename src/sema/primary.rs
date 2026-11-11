@@ -12,7 +12,7 @@ use super::*;
 
 impl Parser {
     pub fn numbers(&mut self) -> SemaResult<Expr> {
-        let result: SemaResult<Expr> = match self.previous.literal {
+        match self.previous.literal {
             Some(ref v) => {
                 let Literal::Number(x) = v else {
                     return Err(error::SemaErr::Expected {
@@ -32,18 +32,11 @@ impl Parser {
                     message: format!("Expcted a literal found '{:?}' ", self.previous.token_type),
                 });
             }
-        };
-
-        if Self::is_impl_mul(&self.current.token_type) {
-            let res = result?;
-            return Ok(self.implicit_mul(&res)?);
-        } else {
-            return Ok(result?);
         }
     }
 
     pub fn ident(&mut self) -> SemaResult<Expr> {
-        let result = match self.previous.literal {
+        match self.previous.literal {
             Some(ref v) => {
                 let Literal::Ident(x) = v else {
                     return Err(error::SemaErr::Expected {
@@ -64,24 +57,13 @@ impl Parser {
                     message: format!("Expcted a literal found '{:?}' ", self.previous.token_type),
                 });
             }
-        };
-
-        Ok(if Self::is_impl_mul(&self.current.token_type) {
-            self.implicit_mul(&result?)?
-        } else {
-            result?
-        })
+        }
     }
 
     pub fn group(&mut self) -> SemaResult<Expr> {
         let inner = self.parse_precedence(crate::pratt::Precedence::None)?;
         self.match_err(crate::scanner::tokens::TokenType::RightParen)?;
-
-        Ok(if Self::is_impl_mul(&self.current.token_type) {
-            self.implicit_mul(&inner)?
-        } else {
-            Expr::Group(Box::new(inner))
-        })
+        Ok(Expr::Group(Box::new(inner)))
     }
 
     pub fn symbols(&mut self) -> SemaResult<Expr> {
@@ -100,22 +82,13 @@ impl Parser {
             }
         };
 
-        if Self::is_impl_mul(&self.current.token_type) {
-            self.implicit_mul(&result)
-        } else {
-            Ok(result)
-        }
+        Ok(result)
     }
 
     pub fn absolute(&mut self) -> SemaResult<Expr> {
         let inner = self.parse_precedence(crate::pratt::Precedence::None)?;
         self.match_err(TokenType::Pipe)?;
-
-        if Self::is_impl_mul(&self.current.token_type) {
-            self.implicit_mul(&inner)
-        } else {
-            Ok(Expr::Absolute(Box::new(inner)))
-        }
+        Ok(Expr::Absolute(Box::new(inner)))
     }
 
     pub fn logarithm(&mut self) -> SemaResult<Expr> {
@@ -140,40 +113,13 @@ impl Parser {
         }
 
         self.match_err(TokenType::LeftParen)?;
-        let expr = self.group()?;
+        let expr = self.parse_precedence(crate::pratt::Precedence::Unary)?;
+        self.match_err(TokenType::RightParen)?;
 
         Ok(Expr::Logarithm {
             function,
             base,
             body: Box::new(expr),
         })
-    }
-
-    pub fn implicit_mul(&mut self, left: &Expr) -> SemaResult<Expr> {
-        let right = self.parse_precedence(crate::pratt::Precedence::Factor)?;
-
-        Ok(Expr::Binary {
-            left: Box::new(left.to_owned()),
-            right: Box::new(right),
-            operator: TokenType::Mul,
-        })
-    }
-
-    fn is_impl_mul(tok: &TokenType) -> bool {
-        matches!(
-            tok,
-            TokenType::LeftParen
-                | TokenType::Ident
-                | TokenType::EulersNumber
-                | TokenType::GoldenRatio
-                | TokenType::Cos
-                | TokenType::Sin
-                | TokenType::Tan
-                | TokenType::Ln
-                | TokenType::Log
-                | TokenType::Pipe
-                | TokenType::Sqrt
-                | TokenType::Pi
-        )
     }
 }

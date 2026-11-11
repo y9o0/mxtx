@@ -114,7 +114,7 @@ impl Expr {
             }
             Expr::Ident(x) => Ok(Expr::Ident(x.to_string())),
 
-            Expr::Suffix { left, operator } => {
+            Expr::PostFix { left, operator } => {
                 let left = Self::codegen(left)?;
 
                 let ln = left.unpack_num()?;

@@ -241,6 +241,7 @@ impl<'l> Scanner {
             "csc" => TokenType::Csc,
             "sec" => TokenType::Sec,
             "cot" => TokenType::Cot,
+            "IaF" => TokenType::IaF,
             _ => {
                 return false;
             }

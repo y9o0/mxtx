@@ -109,7 +109,7 @@ impl Expr {
                 })
             }
 
-            Expr::Suffix { left, operator } => Ok(Expr::Suffix {
+            Expr::PostFix { left, operator } => Ok(Expr::PostFix {
                 left: Box::new(left.rep(values)?),
                 operator: *operator,
             }),

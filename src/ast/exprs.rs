@@ -41,7 +41,7 @@ pub enum Expr {
 
     Absolute(Box<Expr>),
 
-    Suffix {
+    PostFix {
         left: Box<Expr>,
         operator: TokenType,
     },

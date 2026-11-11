@@ -17,6 +17,7 @@ pub struct Parser {
 pub struct Checkers {
     pub has_ident: bool,
     pub has_where: bool,
+    pub iaf: bool,
 }
 
 pub enum Answer {
@@ -85,12 +86,17 @@ impl Parser {
             checkers: Checkers {
                 has_ident: false,
                 has_where: false,
+                iaf: false,
             },
         }
     }
 
     pub fn equation(&mut self) -> SemaResult<Answer> {
         self.advance();
+
+        if self.matched(TokenType::IaF, true) {
+            self.checkers.iaf = true
+        }
 
         let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
 
@@ -136,6 +142,22 @@ impl Parser {
         }
 
         Ok(())
+    }
+
+    pub fn matched(&mut self, expected: TokenType, at_cur: bool) -> bool {
+        let tok = if at_cur {
+            self.current.token_type
+        } else {
+            self.previous.token_type
+        };
+
+        if tok == expected {
+            self.advance();
+
+            true
+        } else {
+            false
+        }
     }
 
     pub fn advance(&mut self) {
