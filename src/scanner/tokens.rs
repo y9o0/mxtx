@@ -14,6 +14,7 @@ pub enum TokenType {
     Pipe,       // |
     Underscore, // _
     Bang,       // !
+    Colon,      // :
 
     Greater,   // >
     GreaterEq, // >=
@@ -42,9 +43,12 @@ pub enum TokenType {
 
     Mod, // mod
 
-    Where, // where
-    And,   // and
-    IaF,   // inside a function
+    Where,  // where
+    And,    // and
+    IaF,    // inside a function
+    Domain, // domain
+    Range,  // range
+    Out,    // out
 
     Eof, // end of file
 

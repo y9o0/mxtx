@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use super::*;
 
 #[derive(Debug, Clone)]
@@ -34,7 +37,7 @@ pub enum Expr {
 
     Where {
         left: Box<Expr>,
-        right: HashMap<String, f64>,
+        right: Rc<RefCell<HashMap<String, f64>>>,
     },
 
     Group(Box<Expr>),
@@ -44,5 +47,15 @@ pub enum Expr {
     PostFix {
         left: Box<Expr>,
         operator: TokenType,
+    },
+
+    Domain {
+        cond: Box<Expr>,
+        left: Box<Expr>,
+    },
+
+    Range {
+        left: Box<Expr>,
+        cond: Box<Expr>,
     },
 }

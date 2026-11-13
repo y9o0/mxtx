@@ -14,6 +14,9 @@ pub enum SemaErr {
 
     #[error("Unexpected '{}' at line '{}'", message, line)]
     Unexpected { line: u32, message: String },
+
+    #[error("{}", message)]
+    OutOfDomain { message: String },
 }
 
 pub type SemaResult<T> = std::result::Result<T, SemaErr>;

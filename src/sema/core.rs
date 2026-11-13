@@ -18,6 +18,7 @@ pub struct Checkers {
     pub has_ident: bool,
     pub has_where: bool,
     pub iaf: bool,
+    pub irange: bool,
 }
 
 pub enum Answer {
@@ -87,6 +88,7 @@ impl Parser {
                 has_ident: false,
                 has_where: false,
                 iaf: false,
+                irange: false,
             },
         }
     }

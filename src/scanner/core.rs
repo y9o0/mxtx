@@ -81,6 +81,7 @@ impl<'l> Scanner {
                 '|' => self.add_token(TokenType::Pipe, None),
                 'π' => self.add_token(TokenType::Pi, None),
                 'e' => self.add_token(TokenType::EulersNumber, None),
+                ':' => self.add_token(TokenType::Colon, None),
                 x if x.is_alphabetic() => {
                     self.string()?;
 
@@ -242,6 +243,10 @@ impl<'l> Scanner {
             "sec" => TokenType::Sec,
             "cot" => TokenType::Cot,
             "IaF" => TokenType::IaF,
+            "domain" => TokenType::Domain,
+            "range" => TokenType::Range,
+            "out" => TokenType::Out,
+
             _ => {
                 return false;
             }

@@ -1,3 +1,5 @@
+use crate::ast::error::GenErr::{OutofDomain, OutofRange};
+
 use super::*;
 
 impl Expr {
@@ -131,10 +133,36 @@ impl Expr {
             }
 
             Expr::Where { left, right } => {
-                let left = left.to_owned().rep(right)?;
+                let left = left.to_owned().rep(&mut right.borrow_mut())?;
                 let result = Self::codegen(&left)?;
 
                 Ok(result)
+            }
+
+            Expr::Domain { cond, left } => {
+                let cond_expr = Self::codegen(cond)?;
+                let bool = cond_expr.unpack_bool()?;
+
+                if !*bool {
+                    return Err(OutofDomain);
+                } else {
+                    let expr = Self::codegen(left)?;
+                    Ok(expr)
+                }
+            }
+
+            Expr::Range { left, cond } => {
+                let left = Expr::codegen(left)?;
+
+                let result = Self::codegen(cond)?;
+                let bool = result.unpack_bool()?;
+
+                if !*bool {
+                    return Err(OutofRange);
+                } else {
+                    let expr = Self::codegen(&left)?;
+                    Ok(expr)
+                }
             }
         }
     }

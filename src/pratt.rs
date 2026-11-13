@@ -207,6 +207,21 @@ impl Parser {
                 infix: None,
                 precedence: Precedence::Unary,
             },
+            TokenType::Domain => ParseRule {
+                prefix: None,
+                infix: Some(Parser::relations),
+                precedence: Precedence::None,
+            },
+            TokenType::Range => ParseRule {
+                prefix: None,
+                infix: Some(Parser::relations),
+                precedence: Precedence::None,
+            },
+            TokenType::Out => ParseRule {
+                prefix: Some(Parser::out),
+                infix: None,
+                precedence: Precedence::None,
+            },
             _ => ParseRule {
                 prefix: None,
                 infix: None,

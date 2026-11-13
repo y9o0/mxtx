@@ -11,14 +11,14 @@ macro_rules! eval {
 
             let $crate::Answer::Eval(expr) = ans else { panic!("expected Answer::Eval") };
 
-            let rep_expr: $crate::Expr = expr.rep(&hashmap).unwrap();
+            let rep_expr: $crate::Expr = expr.rep(&mut hashmap).unwrap();
             let result = $crate::Expr::codegen(&rep_expr).unwrap();
 
             match result {
                 $crate::Expr::Number(x) => $crate::Answer::Num(x),
                 $crate::Expr::Bool(x) => $crate::Answer::Bool(x),
                 _ => {
-                    panic!("unexpected result type")
+                    panic!("unexpected result type: '{:?}'", result)
                 }
             }
         }

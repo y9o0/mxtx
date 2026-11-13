@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::scanner::tokens::TokenType;
+use std::collections::HashMap;
 
 pub mod codegen;
 pub mod error;
@@ -36,6 +35,18 @@ impl Expr {
         }
     }
 
+    pub fn unpack_bool(&self) -> GenResult<&bool> {
+        match self {
+            Expr::Bool(x) => Ok(x),
+            _ => {
+                return Err(GenErr::Unexpected {
+                    at: "codegen".to_string(),
+                    message: format!("'{:?}'", self),
+                });
+            }
+        }
+    }
+
     pub fn is_ident(&self) -> bool {
         match self {
             Expr::Ident(_) => true,
@@ -43,7 +54,7 @@ impl Expr {
         }
     }
 
-    pub fn rep(&self, values: &HashMap<String, f64>) -> GenResult<Expr> {
+    pub fn rep(&self, values: &mut HashMap<String, f64>) -> GenResult<Expr> {
         match self {
             Expr::Number(x) => Ok(Expr::Number(*x)),
 
@@ -112,6 +123,25 @@ impl Expr {
             Expr::PostFix { left, operator } => Ok(Expr::PostFix {
                 left: Box::new(left.rep(values)?),
                 operator: *operator,
+            }),
+
+            Expr::Domain { cond, left } => Ok(Expr::Domain {
+                cond: Box::new(cond.rep(values)?),
+                left: Box::new(left.rep(values)?),
+            }),
+
+            Expr::Range { left, cond } => Ok({
+                let reped = left.rep(values)?;
+                let left = Self::codegen(&reped)?;
+                let ln = left.unpack_num()?;
+
+                values.insert("out".to_string(), ln);
+                let expr_cond = cond.rep(values)?;
+
+                Expr::Range {
+                    left: Box::new(left),
+                    cond: Box::new(expr_cond),
+                }
             }),
 
             _ => {
