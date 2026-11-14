@@ -58,4 +58,9 @@ pub enum Expr {
         left: Box<Expr>,
         cond: Box<Expr>,
     },
+
+    Chain {
+        left_part: Box<Expr>,
+        right_part: Box<Expr>,
+    },
 }

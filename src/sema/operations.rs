@@ -1,3 +1,5 @@
+use crate::pratt::Precedence::Comparison;
+
 use super::*;
 
 impl Parser {
@@ -20,6 +22,40 @@ impl Parser {
             right: Box::new(right),
             operator: op,
         })
+    }
+
+    pub fn compersion(&mut self, left: &Expr) -> SemaResult<Expr> {
+        self.advance();
+        let op = self.previous.token_type;
+
+        let right = self.parse_precedence(Comparison.next())?;
+
+        if matches!(
+            self.current.token_type,
+            TokenType::Equal
+                | TokenType::Greater
+                | TokenType::GreaterEq
+                | TokenType::Lesser
+                | TokenType::LesserEq
+                | TokenType::NotEq
+        ) {
+            let expr = self.compersion(&right)?;
+
+            return Ok(Expr::Chain {
+                left_part: Box::new(Expr::Binary {
+                    left: Box::new(left.to_owned()),
+                    right: Box::new(right),
+                    operator: op,
+                }),
+                right_part: Box::new(expr),
+            });
+        } else {
+            return Ok(Expr::Binary {
+                left: Box::new(left.to_owned()),
+                right: Box::new(right),
+                operator: op,
+            });
+        }
     }
 
     pub fn unary(&mut self) -> SemaResult<Expr> {

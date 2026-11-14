@@ -11,36 +11,36 @@ use {
 };
 
 impl Expr {
-    pub fn unpack_num(&self) -> GenResult<f64> {
+    pub fn unpack_num(&self, at: &str) -> GenResult<f64> {
         match self {
             Expr::Number(x) => Ok(*x),
             _ => {
                 return Err(GenErr::Unexpected {
-                    at: "codegen".to_string(),
+                    at: format!("codegen 'num at {}'", at),
                     message: format!("'{:?}'", self),
                 });
             }
         }
     }
 
-    pub fn unpack_ident(self) -> GenResult<String> {
+    pub fn unpack_ident(self, at: &str) -> GenResult<String> {
         match self {
             Expr::Ident(x) => Ok(x),
             _ => {
                 return Err(GenErr::Unexpected {
-                    at: "codegen".to_string(),
+                    at: format!("codegen 'ident at {}'", at),
                     message: format!("'{:?}'", self),
                 });
             }
         }
     }
 
-    pub fn unpack_bool(&self) -> GenResult<&bool> {
+    pub fn unpack_bool(&self, at: &str) -> GenResult<&bool> {
         match self {
             Expr::Bool(x) => Ok(x),
             _ => {
                 return Err(GenErr::Unexpected {
-                    at: "codegen".to_string(),
+                    at: format!("codegen 'bool at {}'", at),
                     message: format!("'{:?}'", self),
                 });
             }
@@ -133,7 +133,7 @@ impl Expr {
             Expr::Range { left, cond } => Ok({
                 let reped = left.rep(values)?;
                 let left = Self::codegen(&reped)?;
-                let ln = left.unpack_num()?;
+                let ln = left.unpack_num("range in rep")?;
 
                 values.insert("out".to_string(), ln);
                 let expr_cond = cond.rep(values)?;
@@ -142,6 +142,14 @@ impl Expr {
                     left: Box::new(left),
                     cond: Box::new(expr_cond),
                 }
+            }),
+
+            Expr::Chain {
+                left_part,
+                right_part,
+            } => Ok(Expr::Chain {
+                left_part: Box::new(left_part.rep(values)?),
+                right_part: Box::new(right_part.rep(values)?),
             }),
 
             _ => {

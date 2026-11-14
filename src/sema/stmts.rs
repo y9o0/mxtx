@@ -10,12 +10,15 @@ impl Parser {
             self.advance();
 
             self.advance();
-            let ident = self.ident()?.unpack_ident().unwrap();
+            let ident = self.ident()?.unpack_ident("where stmt").unwrap();
 
             self.match_err(TokenType::Equal)?;
 
             let expr = self.parse_precedence(crate::pratt::Precedence::None)?;
-            let result = Expr::codegen(&expr).unwrap().unpack_num().unwrap();
+            let result = Expr::codegen(&expr)
+                .unwrap()
+                .unpack_num("where stmt")
+                .unwrap();
 
             values.insert(ident, result);
 
@@ -39,8 +42,10 @@ impl Parser {
 
         let tok = self.previous.token_type;
 
-        if tok == TokenType::Range {
-            self.checkers.irange = true
+        match tok {
+            TokenType::Range => self.checkers.irange = true,
+            TokenType::Domain => self.checkers.idomain = true,
+            _ => {}
         }
 
         if !self.checkers.has_ident && !self.checkers.iaf {
@@ -51,7 +56,7 @@ impl Parser {
         }
 
         self.match_err(TokenType::Colon)?;
-        let expr = self.parse_precedence(crate::pratt::Precedence::Comparison)?;
+        let expr = self.parse_precedence(crate::pratt::Precedence::Logic)?;
 
         match tok {
             TokenType::Domain => Ok(Expr::Domain {
@@ -80,5 +85,16 @@ impl Parser {
         }
 
         Ok(Expr::Ident("out".to_string()))
+    }
+
+    pub fn and(&mut self, left: &Expr) -> SemaResult<Expr> {
+        self.advance();
+
+        let right = self.parse_precedence(crate::pratt::Precedence::Comparison)?;
+
+        Ok(Expr::Chain {
+            left_part: Box::new(left.to_owned()),
+            right_part: Box::new(right),
+        })
     }
 }

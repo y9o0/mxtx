@@ -10,6 +10,7 @@ use crate::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum Precedence {
     None,
+    Logic,      // and
     Comparison, // > < >= <=
     Term,       // + -
     Factor,     // * / mod
@@ -31,7 +32,8 @@ pub struct ParseRule {
 impl Precedence {
     pub fn next(self) -> Precedence {
         match self {
-            Precedence::None => Precedence::Comparison,
+            Precedence::None => Precedence::Logic,
+            Precedence::Logic => Precedence::Comparison,
             Precedence::Comparison => Precedence::Term,
             Precedence::Term => Precedence::Factor,
             Precedence::Factor => Precedence::Unary,
@@ -114,27 +116,27 @@ impl Parser {
             },
             TokenType::Greater => ParseRule {
                 prefix: None,
-                infix: Some(Parser::binary),
+                infix: Some(Parser::compersion),
                 precedence: Precedence::Comparison,
             },
             TokenType::GreaterEq => ParseRule {
                 prefix: None,
-                infix: Some(Parser::binary),
+                infix: Some(Parser::compersion),
                 precedence: Precedence::Comparison,
             },
             TokenType::Lesser => ParseRule {
                 prefix: None,
-                infix: Some(Parser::binary),
+                infix: Some(Parser::compersion),
                 precedence: Precedence::Comparison,
             },
             TokenType::LesserEq => ParseRule {
                 prefix: None,
-                infix: Some(Parser::binary),
+                infix: Some(Parser::compersion),
                 precedence: Precedence::Comparison,
             },
             TokenType::Equal => ParseRule {
                 prefix: None,
-                infix: Some(Parser::binary),
+                infix: Some(Parser::compersion),
                 precedence: Precedence::Comparison,
             },
             TokenType::Pipe => ParseRule {
@@ -221,6 +223,16 @@ impl Parser {
                 prefix: Some(Parser::out),
                 infix: None,
                 precedence: Precedence::None,
+            },
+            TokenType::NotEq => ParseRule {
+                prefix: None,
+                infix: Some(Self::compersion),
+                precedence: Precedence::Comparison,
+            },
+            TokenType::And => ParseRule {
+                prefix: None,
+                infix: Some(Parser::and),
+                precedence: Precedence::Logic,
             },
             _ => ParseRule {
                 prefix: None,

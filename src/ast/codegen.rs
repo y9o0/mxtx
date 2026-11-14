@@ -16,8 +16,8 @@ impl Expr {
                 let left = Self::codegen(left)?;
                 let right = Self::codegen(right)?;
 
-                let ln = left.unpack_num()?;
-                let rn = right.unpack_num()?;
+                let ln = left.unpack_num("binary")?;
+                let rn = right.unpack_num("binary")?;
 
                 return Ok(match operator {
                     TokenType::Plus => Expr::Number(ln + rn),
@@ -31,6 +31,7 @@ impl Expr {
                     TokenType::LesserEq => Expr::Bool(ln <= rn),
                     TokenType::Equal => Expr::Bool(ln == rn),
                     TokenType::Mod => Expr::Number(ln % rn),
+                    TokenType::NotEq => Expr::Bool(ln != rn),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codgen 'binary'".to_string(),
@@ -42,7 +43,7 @@ impl Expr {
             Expr::Radical { operator, right } => {
                 let right = Self::codegen(right)?;
 
-                let rn = right.unpack_num()?;
+                let rn = right.unpack_num("radical")?;
 
                 Ok(match operator {
                     TokenType::Sqrt => Expr::Number(rn.sqrt()),
@@ -59,7 +60,7 @@ impl Expr {
             Expr::Trig { function, body } => {
                 let body = Self::codegen(body)?;
 
-                let result = body.unpack_num()?;
+                let result = body.unpack_num("trig")?;
 
                 Ok(match function {
                     TokenType::Sin => Expr::Number(result.sin()),
@@ -83,7 +84,7 @@ impl Expr {
             Expr::Absolute(x) => {
                 let result = Self::codegen(&*x)?;
 
-                let rn = result.unpack_num()?;
+                let rn = result.unpack_num("abs")?;
 
                 Ok(Expr::Number(rn.abs()))
             }
@@ -102,10 +103,10 @@ impl Expr {
 
                 Ok(match function {
                     TokenType::Log => Expr::Number(
-                        body.unpack_num()?
-                            .log(b.unwrap_or(Expr::Number(10.0)).unpack_num()?),
+                        body.unpack_num("logs")?
+                            .log(b.unwrap_or(Expr::Number(10.0)).unpack_num("logs")?),
                     ),
-                    TokenType::Ln => Expr::Number(body.unpack_num()?.ln()),
+                    TokenType::Ln => Expr::Number(body.unpack_num("logs")?.ln()),
                     _ => {
                         return Err(GenErr::Unexpected {
                             at: "codegen 'log'".to_string(),
@@ -119,7 +120,7 @@ impl Expr {
             Expr::PostFix { left, operator } => {
                 let left = Self::codegen(left)?;
 
-                let ln = left.unpack_num()?;
+                let ln = left.unpack_num("postfix")?;
 
                 Ok(match operator {
                     TokenType::Bang => Expr::Number((1..=ln as u64).fold(1.0, |a, i| a * i as f64)),
@@ -141,7 +142,7 @@ impl Expr {
 
             Expr::Domain { cond, left } => {
                 let cond_expr = Self::codegen(cond)?;
-                let bool = cond_expr.unpack_bool()?;
+                let bool = cond_expr.unpack_bool("domain")?;
 
                 if !*bool {
                     return Err(OutofDomain);
@@ -155,13 +156,30 @@ impl Expr {
                 let left = Expr::codegen(left)?;
 
                 let result = Self::codegen(cond)?;
-                let bool = result.unpack_bool()?;
+                let bool = result.unpack_bool("range")?;
 
                 if !*bool {
                     return Err(OutofRange);
                 } else {
                     let expr = Self::codegen(&left)?;
                     Ok(expr)
+                }
+            }
+
+            Expr::Chain {
+                left_part,
+                right_part,
+            } => {
+                let left_part = Self::codegen(left_part)?;
+                let right_part = Self::codegen(right_part)?;
+
+                let blp = left_part.unpack_bool("chain")?;
+                let brp = right_part.unpack_bool("chain")?;
+
+                if *blp && *brp {
+                    return Ok(Expr::Bool(true));
+                } else {
+                    return Ok(Expr::Bool(false));
                 }
             }
         }

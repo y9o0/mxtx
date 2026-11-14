@@ -15,6 +15,7 @@ pub enum TokenType {
     Underscore, // _
     Bang,       // !
     Colon,      // :
+    NotEq,      // !=
 
     Greater,   // >
     GreaterEq, // >=

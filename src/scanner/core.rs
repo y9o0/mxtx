@@ -60,7 +60,13 @@ impl<'l> Scanner {
                 '√' => self.add_token(TokenType::Sqrt, None),
                 '÷' => self.add_token(TokenType::Div, None),
                 '·' => self.add_token(TokenType::Mul, None),
-                '!' => self.add_token(TokenType::Bang, None),
+                '!' => {
+                    if self.match_next('=') {
+                        self.add_token(TokenType::NotEq, None);
+                    } else {
+                        self.add_token(TokenType::Bang, None)
+                    }
+                }
                 '=' => self.add_token(TokenType::Equal, None),
                 '_' => self.add_token(TokenType::Underscore, None),
                 'φ' => self.add_token(TokenType::GoldenRatio, None),
